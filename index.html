@@ -348,5 +348,33 @@ when_stimuli_loaded_do("blocks"+psy_blockorder+".run()")}var blocks1={blocknumbe
 </script>
 <div id='showdata'></div>
 
+<script>
+  function sendDataToServer(dataObject) {
+    fetch('https://45d1-129-2-89-74.ngrok-free.app', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dataObject)
+    }).catch(e => console.error('Data POST failed', e));
+  }
+</script>
+
+<script>
+  // 1. Save a reference to the original end_of_experiment()
+  const _ptk_end = window.end_of_experiment;
+
+  // 2. Override it so we can interject our POST
+  window.end_of_experiment = function() {
+    // PsyToolkit keeps its CSV/text data in `outputdata`
+    // (or sometimes in a global `results` or `log.value`). 
+    // Here we’ll send that string as JSON:
+    const payload = { data: outputdata };
+
+    sendDataToServer(payload);
+
+    // 3. Finally call the real PsyToolkit cleanup
+    _ptk_end();
+  };
+</script>
+
 </body>
 </html>
